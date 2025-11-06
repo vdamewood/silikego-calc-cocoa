@@ -39,12 +39,17 @@ find_program(IBTOOL ibtool)
 if (NOT IBTOOL)
 	message(FATAL_ERROR "Command ibtool not found. Can't build GUI. Quitting.")
 endif()
+find_program(ACTOOL actool)
+if (NOT ACTOOL)
+	message(FATAL_ERROR "Command actool not found. Can't build icon. Quitting.")
+endif()
 
 add_custom_command(OUTPUT MainMenu.nib
 	COMMAND "${IBTOOL}" --compile MainMenu.nib "${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.xib"
 	COMMENT "Compiling ${CMAKE_CURRENT_SOURCE_DIR}/src/MainMenu.xib"
 )
 set_source_files_properties(MainMenu.nib PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
 add_custom_command(OUTPUT
 	Assets.car
 	SilikegoIcon.icns
