@@ -47,10 +47,10 @@
 
 - (IBAction) Calculate:(id)sender
 {
-	std::unique_ptr<Silikego::SyntaxTreeNode> Ast = Silikego::ParseInfix(
+	Silikego::SyntaxTreeNode Ast = Silikego::ParseInfix(
 		std::unique_ptr<Silikego::DataSource>(new Silikego::StringSource(
 			[[self.input stringValue] UTF8String])));
-	Silikego::Value Result = Ast->Evaluate(*self.caller);
+	Silikego::Value Result = Ast.Evaluate(*self.caller);
 
 	switch (Result.Status())
 	{
