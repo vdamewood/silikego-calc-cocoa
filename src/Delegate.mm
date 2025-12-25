@@ -31,8 +31,8 @@
 - (void)applicationDidFinishLaunching:(NSNotification *)aNotification
 {
 	self.caller = new Silikego::FunctionCaller();
-	self.caller->InstallOperators();
-	self.caller->InstallFunctions();
+	Silikego::InstallOperators(*self.caller);
+	Silikego::InstallFunctions(*self.caller);
 }
 
 - (BOOL)applicationShouldTerminateAfterLastWindowClosed:(NSApplication *)theApplication
@@ -50,39 +50,44 @@
 	Silikego::SyntaxTreeNode Ast = Silikego::ParseInfix(
 		std::unique_ptr<Silikego::DataSource>(new Silikego::StringSource(
 			[[self.input stringValue] UTF8String])));
-	Silikego::Value Result = Ast.Evaluate(*self.caller);
+	Silikego::Value Result = Ast.evaluate(*self.caller);
 
-	switch (Result.Status())
+	switch (Result.status())
 	{
-	case Silikego::ValueStatus::INTEGER:
-		[self.output setIntegerValue: Result.Integer()];
+	case Silikego::ValueStatus::Integer:
+		[self.output setIntegerValue: Result.toInteger()];
 		break;
-	case  Silikego::ValueStatus::FLOAT:
-		[self.output setDoubleValue: Result.Float()];
+	case Silikego::ValueStatus::Real:
+		[self.output setDoubleValue: Result.toReal()];
 		break;
-	case Silikego::ValueStatus::MEMORY_ERR:
-		[self.output setStringValue: @"Out of memory"];
-		break;
-	case Silikego::ValueStatus::SYNTAX_ERR:
-		[self.output setStringValue: @"Syntax error"];
-		break;
-	case Silikego::ValueStatus::ZERO_DIV_ERR:
-		[self.output setStringValue: @"Division by zero"];
-		break;
-	case Silikego::ValueStatus::BAD_FUNCTION:
-		[self.output setStringValue: @"Function not found"];
-		break;
-	case Silikego::ValueStatus::BAD_ARGUMENTS:
-		[self.output setStringValue: @"Bad argument count"];
-		break;
-	case Silikego::ValueStatus::DOMAIN_ERR:
-		[self.output setStringValue: @"Domain error"];
-		break;
-	case Silikego::ValueStatus::RANGE_ERR:
-		[self.output setStringValue: @"Range error"];
-		break;
-	default:
-		[self.output setStringValue: @"Unexpected error"];
+	case Silikego::ValueStatus::Error:
+		switch (Result.toError())
+		{
+		case Silikego::Error::Memory:
+			[self.output setStringValue: @"Out of memory"];
+			break;
+		case Silikego::Error::Syntax:
+			[self.output setStringValue: @"Syntax error"];
+			break;
+		case Silikego::Error::ZeroDivision:
+			[self.output setStringValue: @"Division by zero"];
+			break;
+		case Silikego::Error::FunctionName:
+			[self.output setStringValue: @"Function not found"];
+			break;
+		case Silikego::Error::FunctionArguments:
+			[self.output setStringValue: @"Bad argument count"];
+			break;
+		case Silikego::Error::Domain:
+			[self.output setStringValue: @"Domain error"];
+			break;
+		case Silikego::Error::Range:
+			[self.output setStringValue: @"Range error"];
+			break;
+		default:
+			[self.output setStringValue: @"Unexpected error"];
+			break;
+		}
 	}
 }
 @end
